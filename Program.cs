@@ -19,6 +19,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Inicializar base de datos
+using (var scope = app.Services.CreateScope())
+{
+    var dbService = scope.ServiceProvider.GetRequiredService<IDatabaseService>();
+    await dbService.InitializeAsync();
+}
+
 // Configurar pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
