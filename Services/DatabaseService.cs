@@ -25,8 +25,9 @@ namespace RenderDB.Services
             
             if (!string.IsNullOrEmpty(databaseUrl))
             {
-                // Render proporciona una URL de conexión
-                _connectionString = databaseUrl;
+                // Render proporciona una URL de conexión en formato postgresql://
+                // Convertir a formato que Npgsql entienda
+                _connectionString = ConvertPostgresUriToNpgsqlConnectionString(databaseUrl);
                 _logger.LogInformation("Usando DATABASE_URL de variable de entorno");
             }
             else
@@ -55,6 +56,35 @@ namespace RenderDB.Services
                                   $"Database={database};SSL Mode=Require;Trust Server Certificate=true;";
 
                 _logger.LogInformation("Usando configuración local (appsettings.json o variables de entorno)");
+            }
+        }
+
+        /// <summary>
+        /// Convierte una URI de PostgreSQL (postgresql://user:pass@host:port/db) al formato de conexión de Npgsql
+        /// </summary>
+        private string ConvertPostgresUriToNpgsqlConnectionString(string postgresUri)
+        {
+            try
+            {
+                var uri = new Uri(postgresUri);
+                var builder = new NpgsqlConnectionStringBuilder
+                {
+                    Host = uri.Host,
+                    Port = uri.Port > 0 ? uri.Port : 5432,
+                    Username = uri.UserInfo?.Split(':')[0] ?? "admin",
+                    Password = uri.UserInfo?.Contains(':') == true ? uri.UserInfo.Split(':')[1] : string.Empty,
+                    Database = uri.AbsolutePath.TrimStart('/'),
+                    SslMode = SslMode.Require,
+                    TrustServerCertificate = true
+                };
+
+                _logger.LogInformation("Convertida URI PostgreSQL a connection string de Npgsql");
+                return builder.ConnectionString;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al convertir URI de PostgreSQL");
+                throw;
             }
         }
 
