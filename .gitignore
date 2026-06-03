@@ -1,0 +1,23 @@
+# Esto si es un proyecto de .NET, ignora las carpetas estándar
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+*.DotSettings
+*.DotSettings.user
+
+# Archivos de Visual Studio
+.vs/
+.vscode/
+
+# Archivos locales
+appsettings.local.json
+appsettings.*.json
+!appsettings.Development.json
+
+# Otros
+.DS_Store
+Thumbs.db
